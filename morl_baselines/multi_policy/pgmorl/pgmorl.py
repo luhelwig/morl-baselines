@@ -17,10 +17,10 @@ import torch as th
 import wandb
 from scipy.optimize import least_squares
 
-from morl_baselines.common.evaluation import log_all_multi_policy_metrics
+from morl_reliable.evaluation import log_all_multi_policy_metrics
 from morl_baselines.common.morl_algorithm import MOAgent
 from morl_baselines.common.pareto import ParetoArchive
-from morl_baselines.common.performance_indicators import hypervolume, sparsity
+from morl_reliable.performance_indicators import hypervolume, sparsity
 from morl_baselines.single_policy.ser.mo_ppo import MOPPO, MOPPONet, make_env
 
 

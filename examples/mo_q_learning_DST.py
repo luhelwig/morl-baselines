@@ -4,7 +4,7 @@ import mo_gymnasium as mo_gym
 import numpy as np
 from mo_gymnasium.wrappers import MORecordEpisodeStatistics
 
-from morl_baselines.common.evaluation import eval_mo
+from morl_reliable.evaluation import eval_mo
 from morl_baselines.common.scalarization import tchebicheff
 from morl_baselines.single_policy.ser.mo_q_learning import MOQLearning
 

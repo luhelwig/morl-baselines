@@ -10,7 +10,7 @@ import wandb
 from pymoo.util.ref_dirs import get_reference_directions
 
 from morl_baselines.common.pareto import filter_pareto_dominated
-from morl_baselines.common.performance_indicators import (
+from morl_reliable.performance_indicators import (
     cardinality,
     expected_utility,
     hypervolume,

@@ -14,7 +14,7 @@ import torch.optim as optim
 import wandb
 from torch.distributions import Normal
 
-from morl_baselines.common.evaluation import (
+from morl_reliable.evaluation import (
     log_all_multi_policy_metrics,
     log_episode_info,
     policy_evaluation_mo,

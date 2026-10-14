@@ -9,7 +9,7 @@ import wandb
 import yaml
 from mo_gymnasium.wrappers import MORecordEpisodeStatistics
 
-from morl_baselines.common.evaluation import seed_everything
+from morl_reliable.evaluation import seed_everything
 from morl_baselines.common.experiments import (
     ALGOS,
     ENVS_WITH_KNOWN_PARETO_FRONT,

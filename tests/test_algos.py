@@ -7,7 +7,7 @@ import numpy as np
 import torch as th
 from mo_gymnasium.envs.deep_sea_treasure.deep_sea_treasure import CONCAVE_MAP
 
-from morl_baselines.common.evaluation import eval_mo, eval_mo_reward_conditioned
+from morl_reliable.evaluation import eval_mo, eval_mo_reward_conditioned
 from morl_baselines.common.scalarization import tchebicheff
 from morl_baselines.multi_policy.capql.capql import CAPQL
 from morl_baselines.multi_policy.envelope.envelope import Envelope

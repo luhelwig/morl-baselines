@@ -8,7 +8,7 @@ from typing_extensions import override
 import gymnasium as gym
 import numpy as np
 
-from morl_baselines.common.evaluation import (
+from morl_reliable.evaluation import (
     log_all_multi_policy_metrics,
     policy_evaluation_mo,
 )

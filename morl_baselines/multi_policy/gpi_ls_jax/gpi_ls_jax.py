@@ -18,7 +18,7 @@ from flax.training import orbax_utils
 from flax.training.train_state import TrainState
 
 from morl_baselines.common.buffer import ReplayBuffer, ReplayBufferSamplesNp
-from morl_baselines.common.evaluation import (
+from morl_reliable.evaluation import (
     log_all_multi_policy_metrics,
     log_episode_info,
     policy_evaluation_mo,

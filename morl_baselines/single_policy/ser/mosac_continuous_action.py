@@ -19,7 +19,7 @@ import torch.optim as optim
 import wandb
 
 from morl_baselines.common.buffer import ReplayBuffer
-from morl_baselines.common.evaluation import log_episode_info
+from morl_reliable.evaluation import log_episode_info
 from morl_baselines.common.morl_algorithm import MOPolicy
 from morl_baselines.common.networks import layer_init, mlp, polyak_update
 

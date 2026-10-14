@@ -3,7 +3,6 @@
 import os
 import time
 from abc import ABC, abstractmethod
-from distutils.util import strtobool
 from typing import Dict, Literal, Optional, Union
 
 import gymnasium as gym
@@ -14,10 +13,21 @@ import wandb
 from gymnasium import spaces
 from mo_gymnasium.wrappers.vector import MOSyncVectorEnv
 
-from morl_baselines.common.evaluation import (
+from morl_reliable.evaluation import (
     eval_mo_reward_conditioned,
     policy_evaluation_mo,
 )
+
+
+def strtobool(val: str) -> int:
+    """Converts a string representation of truth to 1 (true) or 0 (false). Replaces distutils.util.strtobool, removed in Python 3.12."""
+    val = val.lower()
+    if val in ("y", "yes", "t", "true", "on", "1"):
+        return 1
+    elif val in ("n", "no", "f", "false", "off", "0"):
+        return 0
+    else:
+        raise ValueError(f"invalid truth value {val!r}")
 
 
 class MOPolicy(ABC):

@@ -9,7 +9,7 @@ import gymnasium as gym
 import numpy as np
 import wandb
 
-from morl_baselines.common.evaluation import log_episode_info
+from morl_reliable.evaluation import log_episode_info
 from morl_baselines.common.model_based.tabular_model import TabularModel
 from morl_baselines.common.morl_algorithm import MOAgent, MOPolicy
 from morl_baselines.common.scalarization import weighted_sum

@@ -9,9 +9,9 @@ import numpy as np
 from cvxpy import SolverError
 from gymnasium.core import Env
 
-from morl_baselines.common.evaluation import policy_evaluation_mo
+from morl_reliable.evaluation import policy_evaluation_mo
 from morl_baselines.common.morl_algorithm import MOPolicy
-from morl_baselines.common.performance_indicators import hypervolume
+from morl_reliable.performance_indicators import hypervolume
 from morl_baselines.common.weights import extrema_weights
 
 

@@ -14,7 +14,7 @@ import wandb
 from torch.distributions import Categorical
 
 from morl_baselines.common.accrued_reward_buffer import AccruedRewardReplayBuffer
-from morl_baselines.common.evaluation import log_episode_info
+from morl_reliable.evaluation import log_episode_info
 from morl_baselines.common.morl_algorithm import MOAgent, MOPolicy
 from morl_baselines.common.networks import layer_init, mlp
 

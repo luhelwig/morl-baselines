@@ -9,7 +9,6 @@ Examples:
 import argparse
 import os
 import subprocess
-from distutils.util import strtobool
 
 import mo_gymnasium as mo_gym
 import numpy as np
@@ -17,7 +16,18 @@ import requests
 from gymnasium.wrappers import FlattenObservation, RecordVideo
 from mo_gymnasium.wrappers import MORecordEpisodeStatistics
 
-from morl_baselines.common.evaluation import seed_everything
+from morl_reliable.evaluation import seed_everything
+
+
+def strtobool(val: str) -> int:
+    """Converts a string representation of truth to 1 (true) or 0 (false). Replaces distutils.util.strtobool, removed in Python 3.12."""
+    val = val.lower()
+    if val in ("y", "yes", "t", "true", "on", "1"):
+        return 1
+    elif val in ("n", "no", "f", "false", "off", "0"):
+        return 0
+    else:
+        raise ValueError(f"invalid truth value {val!r}")
 from morl_baselines.common.experiments import (
     ALGOS,
     ENVS_WITH_KNOWN_PARETO_FRONT,

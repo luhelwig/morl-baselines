@@ -1,6 +1,6 @@
 import numpy as np
 
-from morl_baselines.common.evaluation import eval_mo
+from morl_reliable.evaluation import eval_mo
 from morl_baselines.multi_policy.pgmorl.pgmorl import PGMORL
 from morl_baselines.single_policy.ser.mo_ppo import make_env
 

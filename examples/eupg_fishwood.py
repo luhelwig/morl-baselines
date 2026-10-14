@@ -3,7 +3,7 @@ import numpy as np
 import torch as th
 from mo_gymnasium.wrappers import MORecordEpisodeStatistics
 
-from morl_baselines.common.evaluation import eval_mo_reward_conditioned
+from morl_reliable.evaluation import eval_mo_reward_conditioned
 from morl_baselines.single_policy.esr.eupg import EUPG
 
 

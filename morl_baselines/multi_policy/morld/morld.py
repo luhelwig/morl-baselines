@@ -15,7 +15,7 @@ import torch as th
 from mo_gymnasium.wrappers import MONormalizeReward
 from torch import optim
 
-from morl_baselines.common.evaluation import log_all_multi_policy_metrics
+from morl_reliable.evaluation import log_all_multi_policy_metrics
 from morl_baselines.common.morl_algorithm import MOAgent, MOPolicy
 from morl_baselines.common.networks import polyak_update
 from morl_baselines.common.pareto import ParetoArchive

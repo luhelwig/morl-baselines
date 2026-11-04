@@ -25,7 +25,7 @@ def hypervolume(ref_point: np.ndarray, points: List[npt.ArrayLike]) -> float:
     return HV(ref_point=ref_point * -1)(np.array(points) * -1)
 
 
-def igd(known_front: List[np.ndarray], current_estimate: List[np.ndarray]) -> float:
+def igd(known_front: np.ndarray, current_estimate: List[np.ndarray]) -> float:
     """Inverted generational distance metric. Requires to know the optimal front.
 
     Args:
@@ -68,7 +68,7 @@ def sparsity(front: List[np.ndarray]) -> float:
     return sparsity_value
 
 
-def expected_utility(front: List[np.ndarray], weights_set: List[np.ndarray], utility: Callable = np.dot) -> float:
+def expected_utility(front: List[np.ndarray], weights_set: np.ndarray, utility: Callable = np.dot) -> float:
     """Expected Utility Metric.
 
     Expected utility of the policies on the PF for various weights.
@@ -83,12 +83,15 @@ def expected_utility(front: List[np.ndarray], weights_set: List[np.ndarray], uti
     Returns:
         float: eum metric
     """
+    if len(front) == 0:
+        return float('nan')
+
     maxs = []
     for weights in weights_set:
         scalarized_front = np.array([utility(weights, point) for point in front])
         maxs.append(np.max(scalarized_front))
 
-    return np.mean(np.array(maxs), axis=0)
+    return float(np.mean(maxs))
 
 
 def cardinality(front: List[np.ndarray]) -> float:
@@ -106,7 +109,7 @@ def cardinality(front: List[np.ndarray]) -> float:
 
 
 def maximum_utility_loss(
-    front: List[np.ndarray], reference_set: List[np.ndarray], weights_set: np.ndarray, utility: Callable = np.dot
+    front: List[np.ndarray], reference_set: np.ndarray, weights_set: np.ndarray, utility: Callable = np.dot
 ) -> float:
     """Maximum Utility Loss Metric.
 

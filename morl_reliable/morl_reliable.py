@@ -20,5 +20,4 @@ def eval_algoritm(pastacom agentes, parametros){
 
 
 pós -> analise estatistica
-
 """

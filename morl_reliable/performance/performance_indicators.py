@@ -3,8 +3,10 @@
 We mostly rely on pymoo for the computation of axiomatic indicators (HV and IGD), but some are customly made.
 """
 
+from __future__ import annotations
+
 from copy import deepcopy
-from typing import Callable, List
+from typing import Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -12,7 +14,7 @@ from pymoo.indicators.hv import HV
 from pymoo.indicators.igd import IGD
 
 
-def hypervolume(ref_point: np.ndarray, points: List[npt.ArrayLike]) -> float:
+def hypervolume(ref_point: np.ndarray, points: list[npt.ArrayLike]) -> float:
     """Computes the hypervolume metric for a set of points (value vectors) and a reference point (from Pymoo).
 
     Args:
@@ -25,7 +27,7 @@ def hypervolume(ref_point: np.ndarray, points: List[npt.ArrayLike]) -> float:
     return HV(ref_point=ref_point * -1)(np.array(points) * -1)
 
 
-def igd(known_front: np.ndarray, current_estimate: List[np.ndarray]) -> float:
+def igd(known_front: np.ndarray | list[np.ndarray], current_estimate: list[np.ndarray]) -> float:
     """Inverted generational distance metric. Requires to know the optimal front.
 
     Args:
@@ -33,13 +35,13 @@ def igd(known_front: np.ndarray, current_estimate: List[np.ndarray]) -> float:
         current_estimate: current pareto front
 
     Return:
-        a float stating the average distance between a point in current_estimate and its nearest point in known_front
+        a float stating the average distance between a point in known_front and its nearest point in current_estimate
     """
     ind = IGD(np.array(known_front))
     return ind(np.array(current_estimate))
 
 
-def sparsity(front: List[np.ndarray]) -> float:
+def sparsity(front: list[np.ndarray]) -> float:
     """Sparsity metric from PGMORL.
 
     (!) This metric only considers the points from the PF identified by the algorithm, not the full objective space.
@@ -58,9 +60,9 @@ def sparsity(front: List[np.ndarray]) -> float:
 
     sparsity_value = 0.0
     m = len(front[0])
-    front = np.array(front)
+    front_arr = np.array(front)
     for dim in range(m):
-        objs_i = np.sort(deepcopy(front.T[dim]))
+        objs_i = np.sort(deepcopy(front_arr.T[dim]))
         for i in range(1, len(objs_i)):
             sparsity_value += np.square(objs_i[i] - objs_i[i - 1])
     sparsity_value /= len(front) - 1
@@ -68,7 +70,11 @@ def sparsity(front: List[np.ndarray]) -> float:
     return sparsity_value
 
 
-def expected_utility(front: List[np.ndarray], weights_set: np.ndarray, utility: Callable = np.dot) -> float:
+def expected_utility(
+    front: list[np.ndarray],
+    weights_set: np.ndarray | list[np.ndarray],
+    utility: Callable = np.dot,
+) -> float:
     """Expected Utility Metric.
 
     Expected utility of the policies on the PF for various weights.
@@ -84,7 +90,7 @@ def expected_utility(front: List[np.ndarray], weights_set: np.ndarray, utility: 
         float: eum metric
     """
     if len(front) == 0:
-        return float('nan')
+        return float("nan")
 
     maxs = []
     for weights in weights_set:
@@ -94,7 +100,7 @@ def expected_utility(front: List[np.ndarray], weights_set: np.ndarray, utility: 
     return float(np.mean(maxs))
 
 
-def cardinality(front: List[np.ndarray]) -> float:
+def cardinality(front: list[np.ndarray]) -> int:
     """Cardinality Metric.
 
     Cardinality of the Pareto front approximation.
@@ -103,13 +109,16 @@ def cardinality(front: List[np.ndarray]) -> float:
         front: current pareto front to compute the cardinality on
 
     Returns:
-        float: cardinality metric
+        int: cardinality metric
     """
     return len(front)
 
 
 def maximum_utility_loss(
-    front: List[np.ndarray], reference_set: np.ndarray, weights_set: np.ndarray, utility: Callable = np.dot
+    front: list[np.ndarray],
+    reference_set: np.ndarray | list[np.ndarray],
+    weights_set: np.ndarray | list[np.ndarray],
+    utility: Callable = np.dot,
 ) -> float:
     """Maximum Utility Loss Metric.
 
@@ -125,7 +134,15 @@ def maximum_utility_loss(
     Returns:
         float: mul metric
     """
-    max_scalarized_values_ref = [np.max([utility(weight, point) for point in reference_set]) for weight in weights_set]
-    max_scalarized_values = [np.max([utility(weight, point) for point in front]) for weight in weights_set]
-    utility_losses = [max_scalarized_values_ref[i] - max_scalarized_values[i] for i in range(len(max_scalarized_values))]
+    max_scalarized_values_ref = [
+        np.max([utility(weight, point) for point in reference_set])
+        for weight in weights_set
+    ]
+    max_scalarized_values = [
+        np.max([utility(weight, point) for point in front]) for weight in weights_set
+    ]
+    utility_losses = [
+        max_scalarized_values_ref[i] - max_scalarized_values[i]
+        for i in range(len(max_scalarized_values))
+    ]
     return np.max(utility_losses)

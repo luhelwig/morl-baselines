@@ -1,17 +1,17 @@
 from morl_reliable.performance.performance_indicators import (
+    cardinality,
+    expected_utility,
     hypervolume,
     igd,
+    maximum_utility_loss,
     sparsity,
-    expected_utility,
-    cardinality,
-    maximum_utility_loss
 )
 
 __all__ = [
+    "cardinality",
+    "expected_utility",
     "hypervolume",
     "igd",
-    "sparsity",
-    "expected_utility",
-    "cardinality",
     "maximum_utility_loss",
+    "sparsity",
 ]

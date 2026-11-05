@@ -1,4 +1,7 @@
 """Evaluation context holding the data that metrics may require."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Callable
 
@@ -26,7 +29,7 @@ class EvalContext:
 
     References:
         morl_reliable.evaluate.registry.register_metric
-        morl_reliable.evaluate.evaluator.Evaluator
+        morl_reliable.evaluate.evaluator.FrontierEvaluator
 
     Example:
         ```python
@@ -37,6 +40,7 @@ class EvalContext:
         )
         ```
     """
+
     ref_point: np.ndarray | None = None
     weights: np.ndarray | None = None
     ref_front: np.ndarray | None = None

@@ -1,4 +1,7 @@
 """Registry of evaluation metrics for MORL Reliable."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Callable, Iterable
 
@@ -8,10 +11,11 @@ from morl_reliable.evaluate.context import EvalContext
 
 MetricFunction = Callable[[np.ndarray, EvalContext], float]
 
+
 @dataclass(frozen=True)
 class Metric:
     """
-    A named metric registered for use by the MORL Reliable ``Evaluator``.
+    A named metric registered for use by the MORL Reliable ``FrontierEvaluator``.
 
     Instances are created by the ``register_metric`` decorator.
 
@@ -24,6 +28,7 @@ class Metric:
     References:
         morl_reliable.evaluate.registry.register_metric
     """
+
     name: str
     fn: MetricFunction
     requires: frozenset[str] = frozenset()
@@ -49,7 +54,9 @@ class Metric:
             raise ValueError(f"{self.name} requires {missing}")
         return self.fn(front, ctx)
 
+
 _REGISTRY: dict[str, Metric] = {}
+
 
 def register_metric(name: str, requires: Iterable[str] = ()):
     """
@@ -66,7 +73,7 @@ def register_metric(name: str, requires: Iterable[str] = ()):
         ValueError: If a metric with the same name is already registered.
 
     References:
-        morl_reliable.evaluate.evaluator.Evaluator
+        morl_reliable.evaluate.evaluator.FrontierEvaluator
         morl_reliable.evaluate.context.EvalContext
 
     Example:
@@ -76,13 +83,16 @@ def register_metric(name: str, requires: Iterable[str] = ()):
             ...
         ```
     """
+
     def decorator(fn: MetricFunction) -> MetricFunction:
         if name in _REGISTRY:
             raise ValueError(f"Metric {name} already registered")
 
         _REGISTRY[name] = Metric(name, fn, frozenset(requires))
         return fn
+
     return decorator
+
 
 def get_metric(metric: str | Metric) -> Metric:
     """

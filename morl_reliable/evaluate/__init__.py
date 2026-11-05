@@ -1,17 +1,19 @@
+"""Registry-based evaluation of Pareto front approximations for MORL Reliable."""
+
+from . import builtins as _builtins  # noqa: F401  (registra as métricas padrão)
+from .builtins import DEFAULT_METRICS, MetricName
 from .context import EvalContext
-from .registry import Metric, MetricFunction, register_metric, get_metric
-from . import builtins as _builtins  # registra as métricas padrão
-from .builtins import MetricName, REQUIRED_METRICS
-from .evaluator import Evaluator, OnMissingBehavior
+from .evaluator import FrontierEvaluator, OnMissingBehavior
+from .registry import Metric, MetricFunction, get_metric, register_metric
 
 __all__ = [
-    "Evaluator",
+    "DEFAULT_METRICS",
     "EvalContext",
-    "OnMissingBehavior",
+    "FrontierEvaluator",
     "Metric",
     "MetricFunction",
     "MetricName",
-    "REQUIRED_METRICS",
-    "register_metric",
+    "OnMissingBehavior",
     "get_metric",
+    "register_metric",
 ]

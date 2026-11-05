@@ -1,34 +1,39 @@
-"""Evaluator that computes MORL Reliable metrics over a Pareto front."""
+"""Frontier Evaluator that computes MORL Reliable metrics over a Pareto front."""
+
+from __future__ import annotations
+
 import warnings
+from collections.abc import Sequence
 from enum import StrEnum
-from typing import Sequence
 
 import numpy as np
 
-from morl_reliable.evaluate.builtins import REQUIRED_METRICS
+from morl_reliable.evaluate.builtins import DEFAULT_METRICS
 from morl_reliable.evaluate.context import EvalContext
-from morl_reliable.evaluate.registry import get_metric, Metric
+from morl_reliable.evaluate.registry import Metric, get_metric
 
 
 class OnMissingBehavior(StrEnum):
     """
-    What ``Evaluator`` does when an extra metric's requirements are
+    What ``FrontierEvaluator`` does when a metric's requirements are
     missing from the context.
 
     Attributes:
         RAISE: Raise a ``ValueError``.
         WARN: Skip the metric and emit a warning.
     """
+
     RAISE = "raise"
     WARN = "warn"
 
-class Evaluator:
+
+class FrontierEvaluator:
     """
     Computes the MORL Reliable metrics for a Pareto front approximation.
 
-    The metrics in ``REQUIRED_METRICS`` are always computed. Custom metrics
-    can be registered with ``register_metric`` and passed in
-    ``extra_metrics``.
+    By default, the metrics in ``DEFAULT_METRICS`` are computed. Custom
+    metrics can be registered with ``register_metric`` and passed in
+    ``metrics``.
 
     Attributes:
         ctx: Evaluation context shared by all metrics.
@@ -47,52 +52,46 @@ class Evaluator:
             weights=np.array([[1.0, 0.0], [0.5, 0.5], [0.0, 1.0]]),
             ref_front=np.array([[10.0, 1.0], [6.0, 5.0], [1.0, 9.0]]),
         )
-        ev = Evaluator(ctx)
+        ev = FrontierEvaluator(ctx)
         ev(np.array([[9.0, 1.0], [5.0, 5.0]]))
         # {"Hypervolume": ..., "Expected Utility": ..., ...}
         ```
     """
+
     ctx: EvalContext
     metrics: dict[str, Metric]
 
     def __init__(
-            self,
-            ctx: EvalContext,
-            extra_metrics: Sequence[str | Metric] = (),
-            on_missing: OnMissingBehavior = OnMissingBehavior.RAISE
+        self,
+        ctx: EvalContext,
+        metrics: Sequence[str | Metric] = DEFAULT_METRICS,
+        on_missing: OnMissingBehavior = OnMissingBehavior.RAISE,
     ):
         """
         Builds the set of metrics to evaluate and validates it against ``ctx``.
 
-        All metrics in ``REQUIRED_METRICS`` are always included, so ``ctx`` must
-        provide every field they need (currently ``ref_point``, ``ref_front``
-        and ``weights``). Extra metrics are added after them; if one of their
-        requirements is missing, ``on_missing`` decides whether to raise or to
-        skip the metric with a warning. Passing the same ``Metric`` more than
-        once has no effect.
+        Passing ``metrics`` replaces ``DEFAULT_METRICS``. With the defaults,
+        ``ctx`` must provide ``ref_point``, ``ref_front`` and ``weights``. If a
+        metric's requirements are missing from ``ctx``, ``on_missing`` decides
+        whether to raise or to skip the metric with a warning. Passing the same
+        ``Metric`` more than once has no effect.
 
         Args:
             ctx: Evaluation context shared by all metrics.
-            extra_metrics: Additional metrics to compute, by registered name or as
-                ``Metric`` objects.
-            on_missing: What to do when an extra metric's requirements are not met
-                by ``ctx``. Required metrics always raise.
+            metrics: Metrics to compute, by registered name or as ``Metric``
+                objects. Defaults to ``DEFAULT_METRICS``.
+            on_missing: What to do when a metric's requirements are not met
+                by ``ctx``.
 
         Raises:
-            ValueError: If a required metric's requirements are missing from ``ctx``,
-                if an extra metric's requirements are missing and ``on_missing`` is
-                ``RAISE``, if a metric name is not registered, or if two
-                different metrics share the same name.
+            ValueError: If a metric's requirements are missing from ``ctx`` and
+                ``on_missing`` is ``RAISE``, if a metric name is not registered,
+                or if two different metrics share the same name.
         """
         self.ctx = ctx
         self.metrics = {}
 
-        for m in map(get_metric, REQUIRED_METRICS):
-            if missing := ctx.missing(m.requires):
-                raise ValueError(f"Required metric {m.name} requires {missing}")
-            self.metrics[m.name] = m
-
-        for m in map(get_metric, extra_metrics):
+        for m in map(get_metric, metrics):
             if self._already_included(m):
                 continue
 

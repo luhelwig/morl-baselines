@@ -4,7 +4,7 @@ import enum
 
 from morl_reliable.evaluate.context import EvalContext
 from morl_reliable.evaluate.registry import register_metric
-from morl_reliable.performance import (
+from morl_reliable.performance_indicators import (
     cardinality,
     expected_utility,
     hypervolume,

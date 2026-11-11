@@ -12,7 +12,7 @@ from pymoo.util.ref_dirs import get_reference_directions
 
 from morl_baselines.common.pareto import filter_pareto_dominated
 from morl_baselines.common.weights import equally_spaced_weights
-from morl_reliable.performance import (
+from morl_reliable.performance_indicators import (
     cardinality,
     expected_utility,
     hypervolume,
@@ -27,6 +27,7 @@ def eval_mo(
     w: np.ndarray | None = None,
     scalarization=np.dot,
     render: bool = False,
+    gamma: float | None = None,
 ) -> tuple[float, float, np.ndarray, np.ndarray]:
     """Evaluates one episode of the agent in the environment.
 
@@ -36,22 +37,28 @@ def eval_mo(
         scalarization: scalarization function, taking weights and reward as parameters
         w (np.ndarray): Weight vector
         render (bool, optional): Whether to render the environment. Defaults to False.
+        gamma (float, optional): Discount factor. Defaults to None.
 
     Returns:
         (float, float, np.ndarray, np.ndarray): Scalarized return, scalarized discounted return, vectorized return, vectorized discounted return
     """
     obs, _ = env.reset()
     done = False
-    vec_return, disc_vec_return = np.zeros_like(w), np.zeros_like(w)
-    gamma = 1.0
+
+    reward_dim = env.unwrapped.reward_space.shape[0]
+    vec_return = np.zeros(reward_dim, dtype=np.float64)
+    disc_vec_return = np.zeros(reward_dim, dtype=np.float64)
+
+    gamma = agent.gamma if gamma is None else gamma
+    discount = 1.0
     while not done:
         if render:
             env.render()
         obs, r, terminated, truncated, _info = env.step(agent.eval(obs, w))
         done = terminated or truncated
         vec_return += r
-        disc_vec_return += gamma * r
-        gamma *= agent.gamma
+        disc_vec_return += discount * r
+        discount *= gamma
 
     if w is None:
         scalarized_return = scalarization(vec_return)
@@ -98,9 +105,7 @@ def eval_mo_reward_conditioned(
     while not done:
         if render:
             env.render()
-        obs, r, terminated, truncated, _info = env.step(
-            agent.eval(obs, disc_vec_return, **kwargs)
-        )
+        obs, r, terminated, truncated, _info = env.step(agent.eval(obs, disc_vec_return, **kwargs))
         done = terminated or truncated
         vec_return += r
         disc_vec_return += gamma * r
@@ -122,7 +127,12 @@ def eval_mo_reward_conditioned(
 
 
 def policy_evaluation_mo(
-    agent, env, w: np.ndarray, scalarization=np.dot, rep: int = 5
+    agent,
+    env,
+    w: np.ndarray,
+    scalarization=np.dot,
+    rep: int = 5,
+    gamma: float | None = None,
 ) -> tuple[float, float, np.ndarray, np.ndarray]:
     """Evaluates the value of a policy by running the policy for multiple episodes. Returns the average returns.
 
@@ -132,24 +142,18 @@ def policy_evaluation_mo(
         w (np.ndarray): Weight vector
         scalarization: scalarization function, taking weights and reward as parameters
         rep (int, optional): Number of episodes for averaging. Defaults to 5.
+        gamma (float, optional): Discount factor. Defaults to None.
 
     Returns:
         (float, float, np.ndarray, np.ndarray): Avg scalarized return, Avg scalarized discounted return, Avg vectorized return, Avg vectorized discounted return
     """
-    evals = [
-        eval_mo(agent=agent, env=env, w=w, scalarization=scalarization)
-        for _ in range(rep)
-    ]
-    avg_scalarized_return = np.mean([eval[0] for eval in evals])
-    avg_scalarized_discounted_return = np.mean([eval[1] for eval in evals])
-    avg_vec_return = np.mean([eval[2] for eval in evals], axis=0)
-    avg_disc_vec_return = np.mean([eval[3] for eval in evals], axis=0)
-
+    evals = [eval_mo(agent=agent, env=env, w=w, scalarization=scalarization, gamma=gamma) for _ in range(rep)]
+    scal, scal_disc, vec, vec_disc = zip(*evals)
     return (
-        avg_scalarized_return,
-        avg_scalarized_discounted_return,
-        avg_vec_return,
-        avg_disc_vec_return,
+        float(np.mean(scal)),
+        float(np.mean(scal_disc)),
+        np.mean(vec, axis=0),
+        np.mean(vec_disc, axis=0),
     )
 
 
@@ -182,9 +186,7 @@ def log_all_multi_policy_metrics(
     """
     filtered_front = list(filter_pareto_dominated(current_front))
     hv = hypervolume(hv_ref_point, filtered_front)
-    eum = expected_utility(
-        filtered_front, weights_set=equally_spaced_weights(reward_dim, n_sample_weights)
-    )
+    eum = expected_utility(filtered_front, weights_set=equally_spaced_weights(reward_dim, n_sample_weights))
     card = cardinality(filtered_front)
 
     wandb.log(
@@ -204,15 +206,11 @@ def log_all_multi_policy_metrics(
 
     # If PF is known, log the additional metrics
     if ref_front is not None:
-        generational_distance = igd(
-            known_front=ref_front, current_estimate=filtered_front
-        )
+        generational_distance = igd(known_front=ref_front, current_estimate=filtered_front)
         mul = maximum_utility_loss(
             front=filtered_front,
             reference_set=ref_front,
-            weights_set=get_reference_directions(
-                "energy", reward_dim, n_sample_weights
-            ).astype(np.float32),
+            weights_set=get_reference_directions("energy", reward_dim, n_sample_weights).astype(np.float32),
         )
         wandb.log({"eval/igd": generational_distance, "eval/mul": mul})
 

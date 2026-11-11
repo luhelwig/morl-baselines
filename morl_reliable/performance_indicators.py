@@ -134,15 +134,7 @@ def maximum_utility_loss(
     Returns:
         float: mul metric
     """
-    max_scalarized_values_ref = [
-        np.max([utility(weight, point) for point in reference_set])
-        for weight in weights_set
-    ]
-    max_scalarized_values = [
-        np.max([utility(weight, point) for point in front]) for weight in weights_set
-    ]
-    utility_losses = [
-        max_scalarized_values_ref[i] - max_scalarized_values[i]
-        for i in range(len(max_scalarized_values))
-    ]
+    max_scalarized_values_ref = [np.max([utility(weight, point) for point in reference_set]) for weight in weights_set]
+    max_scalarized_values = [np.max([utility(weight, point) for point in front]) for weight in weights_set]
+    utility_losses = [max_scalarized_values_ref[i] - max_scalarized_values[i] for i in range(len(max_scalarized_values))]
     return np.max(utility_losses)

@@ -6,6 +6,7 @@ from .context import EvalContext
 from .evaluator import FrontierEvaluator, OnMissingBehavior
 from .registry import Metric, MetricFunction, get_metric, register_metric
 
+
 __all__ = [
     "DEFAULT_METRICS",
     "EvalContext",

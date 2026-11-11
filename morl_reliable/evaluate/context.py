@@ -10,8 +10,7 @@ import numpy as np
 
 @dataclass
 class EvalContext:
-    """
-    Data shared by all metrics in an evaluation.
+    """Data shared by all metrics in an evaluation.
 
     Each metric declares which of these fields it needs (see
     ``register_metric``); fields left as ``None`` are considered missing.
@@ -47,8 +46,7 @@ class EvalContext:
     utility: Callable = np.dot
 
     def missing(self, requires: frozenset[str]) -> set[str]:
-        """
-        Returns the required fields that are not available in this context.
+        """Returns the required fields that are not available in this context.
 
         Args:
             requires: Names of the fields a metric needs.

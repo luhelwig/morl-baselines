@@ -14,9 +14,7 @@ from morl_reliable.evaluate.registry import Metric, get_metric
 
 
 class OnMissingBehavior(StrEnum):
-    """
-    What ``FrontierEvaluator`` does when a metric's requirements are
-    missing from the context.
+    """How ``FrontierEvaluator`` handles metrics with missing requirements.
 
     Attributes:
         RAISE: Raise a ``ValueError``.
@@ -28,8 +26,7 @@ class OnMissingBehavior(StrEnum):
 
 
 class FrontierEvaluator:
-    """
-    Computes the MORL Reliable metrics for a Pareto front approximation.
+    """Computes the MORL Reliable metrics for a Pareto front approximation.
 
     By default, the metrics in ``DEFAULT_METRICS`` are computed. Custom
     metrics can be registered with ``register_metric`` and passed in
@@ -67,8 +64,7 @@ class FrontierEvaluator:
         metrics: Sequence[str | Metric] = DEFAULT_METRICS,
         on_missing: OnMissingBehavior = OnMissingBehavior.RAISE,
     ):
-        """
-        Builds the set of metrics to evaluate and validates it against ``ctx``.
+        """Builds the set of metrics to evaluate and validates it against ``ctx``.
 
         Passing ``metrics`` replaces ``DEFAULT_METRICS``. With the defaults,
         ``ctx`` must provide ``ref_point``, ``ref_front`` and ``weights``. If a
@@ -106,8 +102,7 @@ class FrontierEvaluator:
                 warnings.warn(f"Skipping {m.name}: {missing} is missing")
 
     def _already_included(self, metric: Metric) -> bool:
-        """
-        Checks whether ``metric`` is already in ``self.metrics``.
+        """Checks whether ``metric`` is already in ``self.metrics``.
 
         Args:
             metric: Metric to check.
@@ -129,8 +124,7 @@ class FrontierEvaluator:
         raise ValueError(f"metric '{metric.name}' already defined")
 
     def __call__(self, front: np.ndarray) -> dict[str, float]:
-        """
-        Computes every configured metric for a Pareto front approximation.
+        """Computes every configured metric for a Pareto front approximation.
 
         Args:
             front: Pareto front approximation, array-like of shape
@@ -144,7 +138,9 @@ class FrontierEvaluator:
         return {name: m(front, self.ctx) for name, m in self.metrics.items()}
 
     def __str__(self) -> str:
+        """Returns the configured metrics as a readable string."""
         return str(self.metrics)
 
     def __repr__(self) -> str:
+        """Returns the representation of the configured metrics."""
         return repr(self.metrics)

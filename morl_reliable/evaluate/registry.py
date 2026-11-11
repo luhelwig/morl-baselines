@@ -9,13 +9,13 @@ import numpy as np
 
 from morl_reliable.evaluate.context import EvalContext
 
+
 MetricFunction = Callable[[np.ndarray, EvalContext], float]
 
 
 @dataclass(frozen=True)
 class Metric:
-    """
-    A named metric registered for use by the MORL Reliable ``FrontierEvaluator``.
+    """A named metric registered for use by the MORL Reliable ``FrontierEvaluator``.
 
     Instances are created by the ``register_metric`` decorator.
 
@@ -34,8 +34,7 @@ class Metric:
     requires: frozenset[str] = frozenset()
 
     def __call__(self, front: np.ndarray, ctx: EvalContext) -> float:
-        """
-        Computes the metric for a Pareto front approximation.
+        """Computes the metric for a Pareto front approximation.
 
         Args:
             front: Pareto front approximation to evaluate, as an array of shape
@@ -59,8 +58,7 @@ _REGISTRY: dict[str, Metric] = {}
 
 
 def register_metric(name: str, requires: Iterable[str] = ()):
-    """
-    Decorator that registers a metric function in the global registry.
+    """Decorator that registers a metric function in the global registry.
 
     Args:
         name: Unique name of the metric.
@@ -95,8 +93,7 @@ def register_metric(name: str, requires: Iterable[str] = ()):
 
 
 def get_metric(metric: str | Metric) -> Metric:
-    """
-    Resolves a metric from the registry.
+    """Resolves a metric from the registry.
 
     Args:
         metric: Name of a registered metric, or a ``Metric`` object,

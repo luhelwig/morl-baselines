@@ -15,8 +15,7 @@ from morl_reliable.performance import (
 
 
 class MetricName(enum.StrEnum):
-    """
-    Short aliases for the names of the built-in metrics.
+    """Short aliases for the names of the built-in metrics.
 
     Each member's value is the name the metric is registered under, which
     is also its key in the ``FrontierEvaluator`` output. Since this is a
@@ -79,6 +78,4 @@ def _maximum_utility_loss_metric(front, ctx: EvalContext):
     """Maximum utility loss of ``front`` relative to ``ctx.ref_front``."""
     assert ctx.ref_front is not None
     assert ctx.weights is not None
-    return maximum_utility_loss(
-        front, reference_set=ctx.ref_front, weights_set=ctx.weights, utility=ctx.utility
-    )
+    return maximum_utility_loss(front, reference_set=ctx.ref_front, weights_set=ctx.weights, utility=ctx.utility)

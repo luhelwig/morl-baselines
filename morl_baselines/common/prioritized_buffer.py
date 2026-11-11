@@ -191,6 +191,8 @@ class PrioritizedReplayBuffer:
             idxes: Indexes of the experiences to update
             priorities: New priorities of the experiences
         """
+        if th.is_tensor(idxes):
+            idxes = idxes.detach().cpu().numpy()
         self.min_priority = max(self.min_priority, priorities.max())
         self.tree.batch_set(idxes, priorities)
 

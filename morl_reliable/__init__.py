@@ -2,7 +2,19 @@
 
 from typing import TYPE_CHECKING
 
-from morl_reliable.loader import Loader, class_loader, pickle_loader
+from morl_reliable.algorithms import (
+    Algorithm,
+    get_algorithm,
+    register_algorithm,
+    unregister_algorithm,
+)
+from morl_reliable.loader import (
+    Loader,
+    class_loader,
+    find_checkpoints,
+    make_loader,
+    pickle_loader,
+)
 
 
 if TYPE_CHECKING:
@@ -10,11 +22,17 @@ if TYPE_CHECKING:
 
 __all__ = [
     "AgentEval",
+    "Algorithm",
     "EvalParams",
     "Loader",
     "class_loader",
     "evaluate_algorithm",
+    "find_checkpoints",
+    "get_algorithm",
+    "make_loader",
     "pickle_loader",
+    "register_algorithm",
+    "unregister_algorithm",
 ]
 
 _LAZY = {"AgentEval", "EvalParams", "evaluate_algorithm"}

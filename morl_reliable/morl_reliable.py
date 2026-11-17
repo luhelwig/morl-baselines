@@ -5,17 +5,19 @@ preference weights. This yields an approximation of the Pareto front, which is
 then scored with the MORL Reliable metrics.
 
 Pipeline:
-    evaluate_algorithm -> loader -> evaluate_agent -> run_agent -> FrontierEvaluator
+    evaluate_algorithm -> find_checkpoints, make_loader -> evaluate_agent -> run_agent -> FrontierEvaluator
 
 Example:
     ```python
+    env_id = "deep-sea-treasure-v0"
     params = EvalParams(
-        env_id="deep-sea-treasure-v0",
+        env_id=env_id,
         ref_point=[0.0, -25.0],
         weights=equally_spaced_weights(2, n=100),
+        ref_front=mo_gym.make(env_id).unwrapped.pareto_front(gamma=0.99),
+        gamma=0.99,
     )
-    loader = class_loader(Envelope, net_arch=[256, 256, 256, 256], load_kwargs={"load_replay_buffer": False})
-    results = evaluate_algorithm(Path("weights"), params, loader)
+    results = evaluate_algorithm("envelope", "weights", params, algo_kwargs={"net_arch": [256, 256, 256, 256]})
     results["seed_0"].metrics
     # {"Hypervolume": ..., "Expected Utility": ..., ...}
     ```
@@ -30,7 +32,7 @@ import mo_gymnasium as mo_gym
 import numpy as np
 
 from morl_baselines.common.pareto import filter_pareto_dominated
-from morl_reliable import Loader
+from morl_reliable.algorithms import Algorithm
 from morl_reliable.evaluate import (
     DEFAULT_METRICS,
     EvalContext,
@@ -39,6 +41,7 @@ from morl_reliable.evaluate import (
 )
 from morl_reliable.evaluate.registry import Metric
 from morl_reliable.evaluation import policy_evaluation_mo
+from morl_reliable.loader import Loader, find_checkpoints, make_loader
 
 
 @dataclass
@@ -168,38 +171,55 @@ def evaluate_agent(agent: Any, env: gym.Env, evaluator: FrontierEvaluator, param
 
 
 def evaluate_algorithm(
-    agents_dir: Path,
+    algorithm: "Algorithm | str | type | Loader",
+    agents_dir: str | Path,
     params: EvalParams,
-    loader: Loader,
-    pattern: str = "*.tar",
+    algo_kwargs: dict[str, Any] | None = None,
+    load_kwargs: dict[str, Any] | None = None,
+    pattern: str | None = None,
 ) -> dict[str, AgentEval]:
     """Evaluates every checkpoint of an algorithm (typically one per seed).
 
     Args:
-        agents_dir: Directory containing the checkpoints.
+        algorithm: Algorithm whose checkpoints are evaluated. A name
+            (``"envelope"``, ``Algorithm.ENVELOPE`` or one registered with
+            ``@register_algorithm``), an algorithm class, or a ``Loader``
+            for agents that cannot be rebuilt with ``cls(env, **algo_kwargs)``.
+        agents_dir: Directory containing the checkpoints of this algorithm only.
         params: Evaluation protocol, applied identically to every agent.
-        loader: Function that rebuilds an agent from a checkpoint path and
-            the environment. See ``morl_reliable.loader``.
-        pattern: Glob pattern used to find the checkpoints in ``agents_dir``.
+        algo_kwargs: Constructor arguments of the algorithm; must match the
+            training run (e.g. ``net_arch``). Not allowed with a ``Loader``.
+        load_kwargs: Extra arguments for ``agent.load``. ``load_replay_buffer=False``
+            is added when supported. A replay buffer stored in the checkpoint
+            is still read from disk, so save checkpoints meant for evaluation
+            with ``save_replay_buffer=False``.
+        pattern: Glob pattern, relative to ``agents_dir``, of the checkpoints.
+            By default, ``*.tar`` files and finished Orbax checkpoint
+            directories; see ``find_checkpoints``.
 
     Returns:
-        Mapping from checkpoint file name (without extension) to its result.
+        Mapping from checkpoint name (path relative to ``agents_dir`` without
+        the ``.tar`` extension, e.g. ``"seed_0"``) to its result.
 
     Raises:
-        FileNotFoundError: If no file in ``agents_dir`` matches ``pattern``.
+        ValueError: If ``algorithm`` is an unknown name, or ``agents_dir``
+            mixes ``.tar`` files and Orbax directories.
+        TypeError: If ``algorithm`` is not a name, class or ``Loader``, or
+            kwargs are given with a ``Loader``.
+        FileNotFoundError: If no checkpoint is found in ``agents_dir``.
     """
-    files = sorted(agents_dir.glob(pattern))
-    if not files:
-        raise FileNotFoundError(f"No {pattern} checkpoints found in {agents_dir}")
-
-    env = mo_gym.make(params.env_id)
+    checkpoints = find_checkpoints(agents_dir, pattern)
+    loader = make_loader(algorithm, algo_kwargs, load_kwargs)
     evaluator = make_evaluator(params)
 
     results: dict[str, AgentEval] = {}
+    env = mo_gym.make(params.env_id)
     try:
-        for file in files:
-            agent = loader(file, env)
-            results[file.stem] = evaluate_agent(agent, env, evaluator, params)
+        for name, path in checkpoints.items():
+            agent = loader(path, env)
+            results[name] = evaluate_agent(agent, env, evaluator, params)
+            # Free this agent before the next one is built.
+            del agent
     finally:
         env.close()
     return results

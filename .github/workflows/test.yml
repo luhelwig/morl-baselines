@@ -30,3 +30,4 @@ jobs:
       run: |
         pytest tests/test_algos.py
         pytest tests/test_pruning.py
+        pytest tests/morl_reliable
